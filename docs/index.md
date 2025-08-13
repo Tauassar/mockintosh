@@ -1,17 +1,17 @@
 # Mockintosh
 
 <p align="center">
-    <a href="https://github.com/up9inc/mockintosh/releases/latest">
-        <img alt="GitHub Latest Release" src="https://img.shields.io/github/v/release/up9inc/mockintosh?logo=GitHub&style=flat-square">
+    <a href="https://github.com/tauassar/mockintosh/releases/latest">
+        <img alt="GitHub Latest Release" src="https://img.shields.io/github/v/release/tauassar/mockintosh?logo=GitHub&style=flat-square">
     </a>
-    <a href="https://github.com/up9inc/mockintosh/blob/master/LICENSE">
-        <img alt="GitHub License" src="https://img.shields.io/github/license/up9inc/mockintosh?logo=GitHub&style=flat-square">
+    <a href="https://github.com/tauassar/mockintosh/blob/master/LICENSE">
+        <img alt="GitHub License" src="https://img.shields.io/github/license/tauassar/mockintosh?logo=GitHub&style=flat-square">
     </a>
-    <a href="https://travis-ci.com/github/up9inc/mockintosh/builds/">
-        <img alt="Travis" src="https://img.shields.io/travis/up9inc/mockintosh?logo=Travis&style=flat-square">
+    <a href="https://travis-ci.com/github/tauassar/mockintosh/builds/">
+        <img alt="Travis" src="https://img.shields.io/travis/tauassar/mockintosh?logo=Travis&style=flat-square">
     </a>
-    <a href="https://codecov.io/gh/up9inc/mockintosh">
-        <img alt="Code Coverage (Codecov)" src="https://img.shields.io/codecov/c/github/up9inc/mockintosh?logo=Codecov&style=flat-square">
+    <a href="https://codecov.io/gh/tauassar/mockintosh">
+        <img alt="Code Coverage (Codecov)" src="https://img.shields.io/codecov/c/github/tauassar/mockintosh?logo=Codecov&style=flat-square">
     </a>
 </p>
 
@@ -75,7 +75,7 @@ Mockintosh was born as a new way of mocking microservices._
 
 ### Install on Windows
 
-Download the latest installer EXE from [releases](https://github.com/up9inc/mockintosh/releases) section and launch it.
+Download the latest installer EXE from [releases](https://github.com/tauassar/mockintosh/releases) section and launch it.
 Follow the steps in wizard to install Mockintosh.
 
 To launch Mockintosh in "quick demo" mode, just start it via Start Menu.
@@ -88,7 +88,7 @@ with `mockintosh --help` command there. See also a [section below](#use-demo-sam
 Install Mockintosh app on Mac using [Homebrew](https://brew.sh/) package manager:
 
 ```shell
-$ brew install up9inc/repo/mockintosh
+$ brew install tauassar/repo/mockintosh
 ```
 
 ### Install on Linux
@@ -139,7 +139,7 @@ and you should be seeing a web page like this whenever you visit [localhost:8001
 Alternatively, you can run Mockintosh as Docker container:
 
 ```shell
-$ docker run -it -p 8000-8005:8000-8005 -v `pwd`:/tmp up9inc/mockintosh /tmp/config.json
+$ docker run -it -p 8000-8005:8000-8005 -v `pwd`:/tmp tauassar/mockintosh /tmp/config.json
 ```
 
 Please note the `-p` flag used to publish container's ports and `-v` to mount directory with config into container.

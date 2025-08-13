@@ -1,20 +1,20 @@
 # Mockintosh
 
 <p align="center">
-    <a href="https://github.com/up9inc/mockintosh/releases/latest">
-        <img alt="GitHub Latest Release" src="https://img.shields.io/github/v/release/up9inc/mockintosh?logo=GitHub&style=flat-square">
+    <a href="https://github.com/tauassar/mockintosh/releases/latest">
+        <img alt="GitHub Latest Release" src="https://img.shields.io/github/v/release/tauassar/mockintosh?logo=GitHub&style=flat-square">
     </a>
-    <a href="https://github.com/up9inc/mockintosh/blob/master/LICENSE">
-        <img alt="GitHub License" src="https://img.shields.io/github/license/up9inc/mockintosh?logo=GitHub&style=flat-square">
+    <a href="https://github.com/tauassar/mockintosh/blob/master/LICENSE">
+        <img alt="GitHub License" src="https://img.shields.io/github/license/tauassar/mockintosh?logo=GitHub&style=flat-square">
     </a>
-    <a href="https://travis-ci.com/github/up9inc/mockintosh/builds/">
-        <img alt="Travis" src="https://img.shields.io/travis/up9inc/mockintosh?logo=Travis&style=flat-square">
+    <a href="https://travis-ci.com/github/tauassar/mockintosh/builds/">
+        <img alt="Travis" src="https://img.shields.io/travis/tauassar/mockintosh?logo=Travis&style=flat-square">
     </a>
-    <a href="https://hub.docker.com/r/up9inc/mockintosh">
-        <img alt="Docker Build Status" src="https://img.shields.io/docker/cloud/build/up9inc/mockintosh?logo=Docker&style=flat-square">
+    <a href="https://hub.docker.com/r/tauassar/mockintosh">
+        <img alt="Docker Build Status" src="https://img.shields.io/docker/cloud/build/tauassar/mockintosh?logo=Docker&style=flat-square">
     </a>
-    <a href="https://codecov.io/gh/up9inc/mockintosh">
-        <img alt="Code Coverage (Codecov)" src="https://img.shields.io/codecov/c/github/up9inc/mockintosh?logo=Codecov&style=flat-square">
+    <a href="https://codecov.io/gh/tauassar/mockintosh">
+        <img alt="Code Coverage (Codecov)" src="https://img.shields.io/codecov/c/github/tauassar/mockintosh?logo=Codecov&style=flat-square">
     </a>
 </p>
 
@@ -24,7 +24,7 @@
 
 [**YouTube Video Series**](https://www.youtube.com/watch?v=Q8RPT6TPOIg&list=PLJE3O0IuP-IZMWEOI8dU0U3rO_CPPhLv9)
 
-[**Bug Tracker**](https://github.com/up9inc/mockintosh/issues)
+[**Bug Tracker**](https://github.com/tauassar/mockintosh/issues)
 
 [**Slack**](https://up9.slack.com/)
 
@@ -98,11 +98,11 @@ Mockintosh was born as a new way of mocking microservices._
 Install Mockintosh app on Mac using [Homebrew](https://brew.sh/) package manager:
 
 ```shell
-$ brew install up9inc/repo/mockintosh
+$ brew install tauassar/repo/mockintosh
 ```
 ### Install on Windows
 
-Download an installer from [releases](https://github.com/up9inc/mockintosh/releases) section and launch it. Follow the steps in wizard to install Mockintosh.
+Download an installer from [releases](https://github.com/tauassar/mockintosh/releases) section and launch it. Follow the steps in wizard to install Mockintosh.
 
 ### Install on Linux
 

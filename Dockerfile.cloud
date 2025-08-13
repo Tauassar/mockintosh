@@ -1,4 +1,4 @@
-FROM up9inc/mockintosh:latest
+FROM tauassar/mockintosh:latest
 
 WORKDIR /usr/src/mockintosh
 

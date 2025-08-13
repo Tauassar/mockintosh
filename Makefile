@@ -224,7 +224,7 @@ copy-mqtt:
 up-asyncs: up-kafka up-rabbitmq up-redis up-gpubsub up-elasticmq
 
 up-kafka:
-	docker run -d -it --rm --name kafka --net=host up9inc/mockintosh:self-contained-kafka && \
+	docker run -d -it --rm --name kafka --net=host tauassar/mockintosh:self-contained-kafka && \
 	sleep 2
 
 up-rabbitmq:

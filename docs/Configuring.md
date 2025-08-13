@@ -11,7 +11,7 @@ recognize request and pick the corresponding response template. [Templating](Tem
 configure different response fields, and also make responses to be dynamic.
 
 _Note: There is
-a [JSONSchema of configuration syntax](https://github.com/up9inc/mockintosh/blob/main/mockintosh/schema.json)
+a [JSONSchema of configuration syntax](https://github.com/tauassar/mockintosh/blob/main/mockintosh/schema.json)
 that is used to validate all configuration files. You can use that as a formal source of configuration syntax._
 
 ## Defining Services
@@ -60,7 +60,7 @@ services:
 ```
 
 If you want to use SSL-enabled mock inside browser (or other client), you would need to
-add [Mockintosh's self-signed certificate](https://github.com/up9inc/mockintosh/tree/main/mockintosh/ssl) into trusted
+add [Mockintosh's self-signed certificate](https://github.com/tauassar/mockintosh/tree/main/mockintosh/ssl) into trusted
 store.
 
 In case you want Mockintosh to use your SSL certificate and key, just provide it as below:

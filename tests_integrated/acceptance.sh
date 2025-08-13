@@ -1,6 +1,6 @@
 #!/bin/sh -xe
 
-docker run -d -it --net=host up9inc/mockintosh:self-contained-kafka
+docker run -d -it --net=host tauassar/mockintosh:self-contained-kafka
 docker run -d -it --net=host rabbitmq:latest
 docker run -d -it --net=host redis:latest
 

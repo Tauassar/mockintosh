@@ -45,7 +45,7 @@ setup(
     long_description_content_type='text/markdown',
 
     # The project's main homepage.
-    url='https://github.com/up9inc/mockintosh',
+    url='https://github.com/tauassar/mockintosh',
 
     # Choose your license
     license='MIT',
