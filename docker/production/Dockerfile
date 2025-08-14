@@ -3,7 +3,7 @@
 
 ARG PYTHON_VERSION=3.11-slim
 
-FROM python:${PYTHON_VERSION} as python
+FROM python:${PYTHON_VERSION} AS python
 
 # Install system dependencies
 RUN apt-get update \
@@ -16,7 +16,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Python dependencies stage
-FROM python as python-deps
+FROM python AS python-deps
 
 # Install Python dependencies
 COPY requirements/ requirements/
@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements/production.txt
 
 # Production stage
-FROM python as production
+FROM python AS production
 
 # Install runtime dependencies only
 RUN apt-get update \
@@ -64,8 +64,6 @@ RUN pip install . && \
     # Clean up pip cache and remove unnecessary files
     pip cache purge && \
     find /usr/local/lib/python3.11/site-packages -type d -name "__pycache__" -exec rm -rf {} + && \
-    find /usr/local/lib/python3.11/site-packages -type d -name "*.dist-info" -exec rm -rf {} + && \
-    find /usr/local/lib/python3.11/site-packages -type d -name "tests" -exec rm -rf {} + && \
     find /usr/local/lib/python3.11/site-packages -type f -name "*.pyc" -delete
 
 # Create necessary directories

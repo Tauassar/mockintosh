@@ -19,10 +19,10 @@ __location__ = path.abspath(path.dirname(__file__))
 
 
 def read_requirements():
-    """parses requirements from requirements.txt"""
-    reqs_path = path.join(__location__, 'requirements.txt')
+    """parses requirements from requirements/base.txt"""
+    reqs_path = path.join(__location__, 'requirements', 'base.txt')
     with open(reqs_path, encoding='utf8') as f:
-        reqs = [line.strip() for line in f if not line.strip().startswith('#')]
+        reqs = [line.strip() for line in f if not line.strip().startswith('#') and not line.strip().startswith('-r')]
 
     names = []
     for req in reqs:

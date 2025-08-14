@@ -18,7 +18,7 @@ from datetime import timedelta
 from uuid import uuid4
 
 from jsonpath_ng import parse as jsonpath_parse
-from jinja2.utils import contextfunction
+from jinja2 import pass_context
 from jinja2.exceptions import TemplateSyntaxError
 
 from mockintosh.helpers import _jinja_add_varname, _jinja_add_to_context
@@ -29,7 +29,7 @@ def fake():
     raise NotImplementedError
 
 
-@contextfunction
+@pass_context
 def reg_ex(context, regex, *args, **kwargs):
     if context['scope'] == 'path':
         for arg in args:
@@ -66,7 +66,7 @@ def json_path(data, path):
     return value
 
 
-@contextfunction
+@pass_context
 def counter(context, name):
     number = 0
     if name in context:
