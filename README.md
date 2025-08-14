@@ -7,14 +7,23 @@
     <a href="https://github.com/tauassar/mockintosh/blob/master/LICENSE">
         <img alt="GitHub License" src="https://img.shields.io/github/license/tauassar/mockintosh?logo=GitHub&style=flat-square">
     </a>
-    <a href="https://travis-ci.com/github/tauassar/mockintosh/builds/">
-        <img alt="Travis" src="https://img.shields.io/travis/tauassar/mockintosh?logo=Travis&style=flat-square">
+    <a href="https://github.com/tauassar/mockintosh/actions/workflows/docker-image.yml">
+        <img alt="Docker Build Status" src="https://img.shields.io/github/actions/workflow/status/tauassar/mockintosh/docker-image.yml?logo=GitHub&style=flat-square">
     </a>
-    <a href="https://hub.docker.com/r/tauassar/mockintosh">
-        <img alt="Docker Build Status" src="https://img.shields.io/docker/cloud/build/tauassar/mockintosh?logo=Docker&style=flat-square">
+    <a href="https://github.com/tauassar/mockintosh/actions/workflows/docker-image.yml">
+        <img alt="Docker Image" src="https://img.shields.io/github/actions/workflow/status/tauassar/mockintosh/docker-image.yml?label=Docker%20Image&logo=docker&style=flat-square">
+    </a>
+    <a href="https://github.com/tauassar/mockintosh/pkgs/container/mockintosh">
+        <img alt="GitHub Container Registry" src="https://img.shields.io/badge/GHCR-mockintosh-blue?logo=github&style=flat-square">
     </a>
     <a href="https://codecov.io/gh/tauassar/mockintosh">
         <img alt="Code Coverage (Codecov)" src="https://img.shields.io/codecov/c/github/tauassar/mockintosh?logo=Codecov&style=flat-square">
+    </a>
+    <a href="https://github.com/tauassar/mockintosh/stargazers">
+        <img alt="GitHub Stars" src="https://img.shields.io/github/stars/tauassar/mockintosh?logo=GitHub&style=flat-square">
+    </a>
+    <a href="https://github.com/tauassar/mockintosh/network">
+        <img alt="GitHub Forks" src="https://img.shields.io/github/forks/tauassar/mockintosh?logo=GitHub&style=flat-square">
     </a>
 </p>
 
@@ -112,6 +121,36 @@ Install Mockintosh Python package using [`pip`](https://pypi.org/project/pip/) (
 $ pip install -U mockintosh
 ```
 
+### Install with Docker
+
+Pull and run the latest Mockintosh image from GitHub Container Registry:
+
+```shell
+# Pull the latest image
+$ docker pull ghcr.io/tauassar/mockintosh:latest
+
+# Run with a sample configuration
+$ docker run -p 8000:8000 -p 8001:8001 ghcr.io/tauassar/mockintosh:latest --sample-config example.yaml
+
+# Run with your own configuration
+$ docker run -p 8000:8000 -p 8001:8001 -v $(pwd):/app/configs ghcr.io/tauassar/mockintosh:latest /app/configs/config.yaml
+```
+
+**Available Docker tags:**
+- `ghcr.io/tauassar/mockintosh:latest` - Latest stable release
+- `ghcr.io/tauassar/mockintosh:main` - Latest from main branch
+- `ghcr.io/tauassar/mockintosh:v1.2.3` - Specific version
+- `ghcr.io/tauassar/mockintosh:local` - Development version
+
+**Ports:**
+- `8000` - Mock service port
+- `8001` - Management UI port
+
+**Volumes:**
+- Mount your configuration files to `/app/configs`
+- Mount data directory to `/app/data` for persistent data
+- Mount logs directory to `/app/logs` for log files
+
 ### Use Demo Sample Config
 
 Run following command to generate `example.yaml` file in the current directory:
@@ -168,14 +207,12 @@ an OpenAPI Specification to its own config format in two different ways:
 Using the `--convert` one can convert an OpenAPI Specification to Mockintosh config.
 
 JSON output example:
-
 ```shell
 $ wget https://petstore.swagger.io/v2/swagger.json
 $ mockintosh swagger.json -c new_config.json json
 ```
 
 YAML example:
-
 ```shell
 $ mockintosh swagger.json -c new_config.yaml yaml
 ```
@@ -191,6 +228,94 @@ $ mockintosh swagger.json
 
 and automatically starts itself from that file. Without producing any new files. So you can start to edit this file
 through the management UI without even restarting Mockintosh.
+
+## Development Setup
+
+### Requirements Structure
+
+Mockintosh uses a modular requirements structure following the cookiecutter-django pattern:
+
+```
+requirements/
+├── base.txt            # Core dependencies for all environments
+├── local.txt           # Local development dependencies
+├── production.txt      # Production dependencies
+├── test.txt            # Testing dependencies
+└── ci.txt              # Continuous integration dependencies
+```
+
+**Installation by environment:**
+```shell
+# Development
+pip install -r requirements/local.txt
+
+# Production
+pip install -r requirements/production.txt
+
+# Testing
+pip install -r requirements/test.txt
+
+# CI
+pip install -r requirements/ci.txt
+```
+
+### Docker Development
+
+For local development with Docker:
+
+```shell
+# Build local development image
+docker build -f docker/local/Dockerfile -t mockintosh:local .
+
+# Run with hot reload
+docker run -p 8000:8000 -p 8001:8001 \
+  -v $(pwd):/app \
+  -v $(pwd)/configs:/app/configs:ro \
+  -v $(pwd)/data:/app/data \
+  mockintosh:local
+```
+
+**Available Docker environments:**
+- `docker/local/` - Local development with hot reload
+- `docker/production/` - Production-optimized builds
+- `docker-compose.yml` - Main compose file with profiles
+
+**Quick start with Make:**
+```shell
+make dev          # Build and run local development
+make prod         # Build and run production
+make up-full      # Start all services (Kafka, Redis, etc.)
+```
+
+## Continuous Integration & Deployment
+
+### GitHub Actions
+
+Mockintosh uses GitHub Actions for automated CI/CD with the following workflow:
+
+**`docker-image.yml`** - Automated Docker image builds:
+- **Triggers**: Push to main, tags (v*), pull requests
+- **Platforms**: Linux AMD64 and ARM64
+- **Registry**: GitHub Container Registry (ghcr.io)
+- **Security**: Trivy vulnerability scanning
+- **Testing**: Basic container functionality tests
+
+**Workflow Features:**
+- Multi-platform Docker builds (AMD64/ARM64)
+- Automatic tagging based on git events
+- GitHub Actions cache for faster builds
+- Security scanning with SARIF output
+- Pull request validation (builds without pushing)
+
+**Available Images:**
+- `ghcr.io/tauassar/mockintosh:latest` - Latest stable release
+- `ghcr.io/tauassar/mockintosh:main` - Latest from main branch
+- `ghcr.io/tauassar/mockintosh:v1.2.3` - Specific version tags
+- `ghcr.io/tauassar/mockintosh:main-abc123` - Commit-specific tags
+
+**View Workflow:**
+- [Docker Image CI](https://github.com/tauassar/mockintosh/actions/workflows/docker-image.yml)
+- [Container Registry](https://github.com/tauassar/mockintosh/pkgs/container/mockintosh)
 
 ## Build the Docs
 
@@ -220,4 +345,3 @@ Run the server:
 ```shell
 $ bundle exec jekyll serve
 ```
-
