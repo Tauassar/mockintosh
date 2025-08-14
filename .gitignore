@@ -1,4 +1,6 @@
 # --- GITIGNORE FOR PYTHON ---
+frontend/node_modules/*
+frontend/package-lock.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

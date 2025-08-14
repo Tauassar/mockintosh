@@ -1,3 +1,3 @@
-from mockintosh import initiate
+from mockintosh import demo_run
 
-initiate()
+demo_run()

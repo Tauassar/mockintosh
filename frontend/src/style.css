@@ -1,0 +1,325 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    height: 100vh;
+  }
+  
+  #app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  main {
+    flex: 1;
+    padding: 1rem 0;
+  }
+}
+
+@layer components {
+  .nav-link {
+    @apply px-4 py-2 rounded-md mx-1 transition-colors duration-200;
+  }
+  
+  .nav-link:hover {
+    @apply bg-gray-100;
+  }
+  
+  .nav-link.active {
+    @apply bg-primary-600 text-white;
+  }
+  
+  .nav-link.active:hover {
+    @apply bg-primary-700;
+  }
+  
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+  }
+  
+  .btn-success {
+    @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500;
+  }
+  
+  .btn-info {
+    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500;
+  }
+  
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
+  
+  .btn-outline-secondary {
+    @apply bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500;
+  }
+  
+  .btn-sm {
+    @apply px-3 py-1.5 text-sm;
+  }
+  
+  .btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+  
+  .form-select {
+    @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500;
+  }
+  
+  .alert {
+    @apply p-4 rounded-md border;
+  }
+  
+  .alert-info {
+    @apply bg-blue-50 border-blue-200 text-blue-800;
+  }
+  
+  .alert-danger {
+    @apply bg-red-50 border-red-200 text-red-800;
+  }
+  
+  .alert-warning {
+    @apply bg-yellow-50 border-yellow-200 text-yellow-800;
+  }
+  
+  .spinner-border {
+    @apply inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin;
+  }
+  
+  .spinner-border-sm {
+    @apply w-3 h-3;
+  }
+  
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .form-check {
+    @apply flex items-center;
+  }
+  
+  .form-check-input {
+    @apply w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 focus:ring-2;
+  }
+  
+  .form-check-label {
+    @apply ml-2 text-sm font-medium text-gray-700;
+  }
+  
+  .h-96 {
+    height: 24rem;
+  }
+}
+
+/* Utility classes that can't use @apply due to circular dependencies */
+.sr-only,
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Additional utility classes */
+.bg-success {
+  background-color: rgb(22 163 74);
+  color: white;
+}
+
+.bg-warning {
+  background-color: rgb(202 138 4);
+  color: white;
+}
+
+.bg-danger {
+  background-color: rgb(220 38 38);
+  color: white;
+}
+
+.bg-secondary {
+  background-color: rgb(75 85 99);
+  color: white;
+}
+
+.bg-info {
+  background-color: rgb(37 99 235);
+  color: white;
+}
+
+.bg-primary {
+  background-color: rgb(37 99 235);
+  color: white;
+}
+
+.text-warning {
+  color: rgb(202 138 4);
+}
+
+.text-success {
+  color: rgb(22 163 74);
+}
+
+.text-info {
+  color: rgb(37 99 235);
+}
+
+.text-primary {
+  color: rgb(37 99 235);
+}
+
+.text-muted {
+  color: rgb(107 114 128);
+}
+
+.small {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.me-1, .me-2 {
+  margin-right: 0.25rem;
+}
+
+.me-2 {
+  margin-right: 0.5rem;
+}
+
+.ms-2 {
+  margin-left: 0.5rem;
+}
+
+.ms-auto {
+  margin-left: auto;
+}
+
+.ps-4 {
+  padding-left: 1rem;
+}
+
+.fw-bold {
+  font-weight: 700;
+}
+
+.fst-italic {
+  font-style: italic;
+}
+
+.text-decoration-none {
+  text-decoration: none;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.table-borderless {
+  border: 0;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.card {
+  background-color: white;
+  border: 1px solid rgb(229 231 235);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+}
+
+.card-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgb(229 231 235);
+  background-color: rgb(249 250 251);
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-text {
+  margin-bottom: 0.5rem;
+}
+
+.list-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.list-group-item {
+  padding: 0.75rem;
+  border: 1px solid rgb(229 231 235);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.list-group-item-action:hover {
+  background-color: rgb(249 250 251);
+}
+
+.list-group-item.active {
+  background-color: rgb(239 246 255);
+  border-color: rgb(147 197 253);
+}
+
+.list-group-flush {
+  gap: 0;
+  border: 0;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.py-2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.py-3 {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.py-5 {
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+
+.py-8 {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.py-12 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
