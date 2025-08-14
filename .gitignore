@@ -1,4 +1,4 @@
-# --- GITIGNORE FOR PYTHON ---
+# --- GITIGNORE FOR FRONTEND ---
 frontend/node_modules/*
 frontend/package-lock.json
 
@@ -116,6 +116,8 @@ ENV/
 
 # Ignore the file that are created for development
 *dev.*
+
+tmp/*
 
 # Copied Certificates
 tests/configs/json/hbs/management/cert.pem

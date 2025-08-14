@@ -1,0 +1,15 @@
+# Test requirements for Mockintosh
+# These are dependencies needed for running tests
+
+# Include base requirements
+-r base.txt
+
+# Testing framework (additional plugins not in local)
+pytest-xdist>=3.0.0
+
+# Coverage
+coverage>=7.0.0
+codecov>=2.1.0
+
+# Mocking
+unittest-mock>=1.0.0

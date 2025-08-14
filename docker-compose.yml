@@ -1,0 +1,42 @@
+version: '3.8'
+
+# Main docker-compose.yml for Mockintosh
+# Based on cookiecutter-django pattern
+
+# Usage:
+#   docker-compose up                    # Start minimal services (mockintosh only)
+#   docker-compose --profile full up     # Start all services with dependencies
+#   docker-compose -f docker/local/docker-compose.yml up     # Local development
+#   docker-compose -f docker/production/docker-compose.yml up # Production
+
+services:
+  # Mockintosh service (minimal - no external dependencies)
+  mockintosh:
+    build:
+      context: .
+      dockerfile: docker/local/Dockerfile
+    ports:
+      - "8000:8000"  # Main service port
+      - "8001:8001"  # Management UI port
+    volumes:
+      - ./configs:/app/configs:ro
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./mockintosh:/app/mockintosh
+    environment:
+      - MOCKINTOSH_DEBUG=true
+      - MOCKINTOSH_DATA_DIR=/app/data
+      - PYTHONPATH=/app
+    command: ["mockintosh", "/app/configs/sample.yaml"]
+    networks:
+      - mockintosh-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/__admin"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  mockintosh-network:
+    driver: bridge

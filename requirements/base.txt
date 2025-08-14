@@ -1,0 +1,34 @@
+# Base requirements for Mockintosh
+# These are the core dependencies needed in all environments
+
+# Core web framework and server
+tornado>=6.1
+
+# Configuration and data formats
+PyYAML>=5.4
+jsonschema==3.2.0
+
+# Templating engines
+Jinja2==2.11.3
+markupsafe==2.0.1
+pybars4>=0.9.11
+
+# Data generation and manipulation
+Faker==4.18.0
+jsonpath-ng==1.5.2
+
+# HTTP and API handling
+httpx==0.23.0
+accept-types==0.4.1
+
+# GraphQL support
+graphql-core>=3.1.5
+
+# Message queue and async messaging
+confluent-kafka>=1.6.1
+pika>=1.2.0
+PyRSMQ>=0.4.5
+paho-mqtt>=1.5.1
+
+# OpenAPI and schema handling
+prance[osv]>=0.21.2

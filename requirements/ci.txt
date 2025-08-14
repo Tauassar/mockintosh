@@ -1,0 +1,14 @@
+# CI requirements for Mockintosh
+# These are dependencies needed for continuous integration
+
+# Include test requirements (which includes base)
+-r test.txt
+
+# CI tools
+tox>=4.0.0
+
+# Code quality (additional tools not in local)
+bandit>=1.7.0
+
+# Security scanning
+safety>=2.3.0
