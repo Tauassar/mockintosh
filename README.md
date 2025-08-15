@@ -120,13 +120,13 @@ $ pip install -U mockintosh
 Run following command to generate `example.yaml` file in the current directory:
 
 ```shell
-$ mockintosh --sample-config example.yaml
+$ mockintosh sample-config example.yaml
 ```
 
 then, run that config with Mockintosh:
 
 ```shell
-$ mockintosh example.yaml
+$ mockintosh serve example.yaml
 ```
 
 And open http://localhost:9999 in your web browser.
@@ -141,59 +141,93 @@ curl -v http://localhost:8888/api/myURLParamValue123/action
 curl -v "http://localhost:8888/someMoreFields?qName1=qValue&qName2=12345" -X POST -H"X-Required-Header: someval" --data "payload"
 ```
 
-## Command-line Arguments
+## Command-line Interface
 
-The list of command-line arguments can be seen by running `mockintosh --help`.
+Mockintosh provides a modern, organized command-line interface with clear subcommands:
 
-If you don't want to listen all of the services in a configuration file then you can specify a list of service
-names (`name` is a string attribute you can set per service):
-
-```shell
-$ mockintosh example.yaml 'Mock for Service1' 'Mock for Service2'
-```
-
-Using `--quiet` and `--verbose` options the logging level can be changed.
-
-Using `--bind` option the bind address for the mock server can be specified, e.g. `mockintosh --bind 0.0.0.0`
-
-Using `--enable-tags` option the tags in the configuration file can be enabled in startup time,
-e.g. `mockintosh --enable-tags first,second`
-
-## OpenAPI Specification to Mockintosh Config Conversion (_experimental_)
-
-_Note: This feature is experimental. One-to-one transpilation of OAS documents is not guaranteed._
-
-It could be a good kickstart if you have already an OpenAPI Specification for your API. Mockintosh is able to transpile
-an OpenAPI Specification to its own config format in two different ways:
-
-### CLI Option `--convert`
-
-Using the `--convert` one can convert an OpenAPI Specification to Mockintosh config.
-
-JSON output example:
+### Generate Sample Configuration
 
 ```shell
-$ wget https://petstore.swagger.io/v2/swagger.json
-$ mockintosh swagger.json -c new_config.json json
+# Generate sample config with default name
+$ mockintosh sample-config
+
+# Generate sample config with custom name
+$ mockintosh sample-config my-config.yaml
 ```
 
-YAML example:
+### Convert OpenAPI Specifications
 
 ```shell
-$ mockintosh swagger.json -c new_config.yaml yaml
+# Convert OpenAPI spec to Mockintosh config
+$ mockintosh convert swagger.json config.yaml
+
+# Specify output format (json or yaml)
+$ mockintosh convert swagger.json config.json json
 ```
 
-### Automatic Conversion
-
-If you start Mockintosh with a valid OpenAPI Specification file then it automatically detects that the input is an
-OpenAPI Specification file:
+### Start the Server
 
 ```shell
-$ mockintosh swagger.json
+# Start server with configuration file
+$ mockintosh serve config.yaml
+
+# Start specific services only
+$ mockintosh serve config.yaml --services "Service1" "Service2"
+
+# Enable specific tags
+$ mockintosh serve config.yaml --tags "dev,test"
+
+# Load custom interceptors
+$ mockintosh serve config.yaml --interceptors "myapp.interceptors.auth" "myapp.interceptors.logging"
 ```
 
-and automatically starts itself from that file. Without producing any new files. So you can start to edit this file
-through the management UI without even restarting Mockintosh.
+### Global Options
+
+All commands support these global options:
+
+```shell
+$ mockintosh --quiet --bind 0.0.0.0 serve config.yaml
+$ mockintosh --verbose --debug --logfile app.log serve config.yaml
+```
+
+**Available Options:**
+- `-q, --quiet`: Less logging messages, only warnings and errors
+- `-v, --verbose`: More logging messages, including debug
+- `-l, --logfile`: Also write log into a file
+- `-b, --bind`: Address to specify the network interface
+- `--debug`: Enable debug mode
+- `--help`: Show help message
+
+### Examples
+
+```shell
+# Quick start with sample config
+$ mockintosh sample-config
+$ mockintosh serve sample-config.yaml
+
+# Development with verbose logging
+$ mockintosh --verbose --debug serve dev-config.yaml
+
+# Production with specific bind address
+$ mockintosh --quiet --bind 0.0.0.0 serve prod-config.yaml
+
+# Convert existing OpenAPI spec
+$ mockintosh convert api-spec.yaml mockintosh-config.yaml yaml
+```
+
+## Docker
+
+```shell
+# Pull the latest image
+$ docker pull ghcr.io/tauassar/mockintosh:latest
+
+# Run with a sample configuration
+$ docker run -p 8000:8000 -p 8001:8001 ghcr.io/tauassar/mockintosh:latest sample-config
+$ docker run -p 8000:8000 -p 8001:8001 ghcr.io/tauassar/mockintosh:latest serve sample-config.yaml
+
+# Run with your own configuration
+$ docker run -p 8000:8000 -p 8001:8001 -v $(pwd):/app/configs ghcr.io/tauassar/mockintosh:latest serve /app/configs/config.yaml
+```
 
 ## Build the Docs
 
@@ -223,3 +257,23 @@ Run the server:
 ```shell
 $ bundle exec jekyll serve
 ```
+
+## OpenAPI Specification to Mockintosh Config Conversion
+
+_Note: This feature is experimental. One-to-one transpilation of OAS documents is not guaranteed._
+
+Mockintosh can convert OpenAPI Specifications to its own config format using the `convert` command:
+
+```shell
+# Convert to YAML (default)
+$ mockintosh convert swagger.json config.yaml
+
+# Convert to JSON
+$ mockintosh convert swagger.json config.json json
+
+# Example with real OpenAPI spec
+$ wget https://petstore.swagger.io/v2/swagger.json
+$ mockintosh convert swagger.json petstore-config.yaml
+```
+
+The conversion provides a good starting point if you already have an OpenAPI Specification for your API.

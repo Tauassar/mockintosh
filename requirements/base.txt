@@ -8,6 +8,9 @@ tornado>=6.1
 PyYAML>=5.4
 jsonschema==3.2.0
 
+# CLI framework
+click>=8.1.0
+
 # Templating engines
 Jinja2>=3.1.0
 markupsafe>=2.0.1
@@ -18,8 +21,8 @@ Faker==4.18.0
 jsonpath-ng==1.5.2
 
 # HTTP and API handling
-httpx==0.23.0
-accept-types==0.4.1
+httpx>=0.25.0
+accept-types>=0.4.1
 
 # GraphQL support
 graphql-core>=3.1.5
