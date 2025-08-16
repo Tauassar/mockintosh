@@ -1,0 +1,28 @@
+services:
+  - name: Comprehensive Test Service
+    port: 8892
+    hostname: localhost
+    ssl: false
+    management_root: /management
+    templating_engine: Handlebars
+    endpoints:
+      - path: /
+        method: GET
+        response: "Hello from Mockintosh!"
+      - path: /api/test
+        method: GET
+        response:
+          body: '{"message": "API is working", "status": "success"}'
+          status: 200
+      - path: /api/post
+        method: POST
+        body:
+          text: '{"type": "application/json"}'
+        response:
+          body: '{"message": "POST request received", "status": "created"}'
+          status: 201
+      - path: /health
+        method: GET
+        response:
+          body: "OK"
+          status: 200

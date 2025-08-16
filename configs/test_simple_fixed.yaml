@@ -1,0 +1,11 @@
+services:
+  - name: Simple Test Service
+    port: 8891
+    endpoints:
+      - path: /
+        response: "Hello from Mockintosh!"
+      - path: /api/test
+        method: GET
+        response:
+          body: '{"message": "API is working", "status": "success"}'
+          status: 200

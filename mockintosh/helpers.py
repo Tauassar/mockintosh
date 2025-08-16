@@ -71,8 +71,9 @@ def _detect_engine(obj: Union[object, dict], context: str = 'config', default: s
         ):
             template_engine = JINJA
     else:
-        if obj.templating_engine.lower() in (JINJA.lower(), SHORT_JINJA):
-            template_engine = JINJA
+        if hasattr(obj, 'templating_engine') and obj.templating_engine is not None:
+            if obj.templating_engine.lower() in (JINJA.lower(), SHORT_JINJA):
+                template_engine = JINJA
     logging.debug('Templating engine (%s) is: %s', context, template_engine)
     return template_engine
 

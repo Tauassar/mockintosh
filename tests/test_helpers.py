@@ -45,8 +45,8 @@ class TestHelpers:
         queue, job = start_render_queue()
 
         config_async_service = ConfigAsyncService(
-            'kafka',
-            "{{env('TESTING_ENV', 'someothervalue')}}"
+            type='kafka',
+            address="{{env('TESTING_ENV', 'someothervalue')}}"
         )
         config_async_service.address_template_renderer(
             JINJA,
@@ -55,8 +55,8 @@ class TestHelpers:
         assert config_async_service.address == 'somevalue'
 
         config_async_service = ConfigAsyncService(
-            'kafka',
-            "{{env('TESTING_NOT_ENV', 'someothervalue')}}"
+            type='kafka',
+            address="{{env('TESTING_NOT_ENV', 'someothervalue')}}"
         )
         config_async_service.address_template_renderer(
             JINJA,

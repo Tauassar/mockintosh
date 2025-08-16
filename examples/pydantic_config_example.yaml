@@ -1,0 +1,152 @@
+# Example Mockintosh configuration using Pydantic-based configuration
+# This file demonstrates the new configuration structure
+
+# Global settings
+templating_engine: Handlebars
+_globals:
+  headers:
+    payload:
+      X-Mockintosh-Version: "2.0.0"
+      X-API-Version: "v1"
+
+# Performance profiles
+performance_profiles:
+  slow:
+    ratio: 0.3
+    delay: 2.0
+    faults:
+      timeout: 0.1
+  fast:
+    ratio: 0.7
+    delay: 0.1
+
+# HTTP Services
+services:
+  - type: http
+    port: 8001
+    name: "User Service Mock"
+    hostname: "localhost"
+    ssl: false
+    management_root: "/management"
+    performance_profile: "fast"
+    
+    endpoints:
+      - path: "/users"
+        method: "GET"
+        comment: "Get all users"
+        response:
+          status: 200
+          headers:
+            payload:
+              Content-Type: "application/json"
+          body: |
+            [
+              {"id": 1, "name": "John Doe", "email": "john@example.com"},
+              {"id": 2, "name": "Jane Smith", "email": "jane@example.com"}
+            ]
+          use_templating: true
+          templating_engine: "Handlebars"
+      
+      - path: "/users/{id}"
+        method: "GET"
+        comment: "Get user by ID"
+        response:
+          status: 200
+          headers:
+            payload:
+              Content-Type: "application/json"
+          body: |
+            {
+              "id": {{id}},
+              "name": "User {{id}}",
+              "email": "user{{id}}@example.com"
+            }
+          use_templating: true
+      
+      - path: "/users"
+        method: "POST"
+        comment: "Create new user"
+        body:
+          schema:
+            payload:
+              type: "object"
+              properties:
+                name:
+                  type: "string"
+                email:
+                  type: "string"
+              required: ["name", "email"]
+        response:
+          status: 201
+          headers:
+            payload:
+              Content-Type: "application/json"
+          body: |
+            {
+              "id": {{faker.uuid}},
+              "name": "{{body.name}}",
+              "email": "{{body.email}}",
+              "created_at": "{{faker.date}}"
+            }
+          use_templating: true
+      
+      - path: "/health"
+        method: "GET"
+        comment: "Health check endpoint"
+        response:
+          status: 200
+          body: |
+            {
+              "status": "healthy",
+              "timestamp": "{{faker.date}}",
+              "version": "2.0.0"
+            }
+          use_templating: true
+
+  - type: http
+    port: 8002
+    name: "Product Service Mock"
+    hostname: "localhost"
+    ssl: false
+    performance_profile: "slow"
+    
+    endpoints:
+      - path: "/products"
+        method: "GET"
+        comment: "Get all products"
+        response:
+          status: 200
+          headers:
+            payload:
+              Content-Type: "application/json"
+          body: |
+            [
+              {"id": 1, "name": "Product A", "price": 29.99},
+              {"id": 2, "name": "Product B", "price": 49.99}
+            ]
+          use_templating: false
+
+# Asynchronous Services (Kafka, AMQP, etc.)
+  - type: kafka
+    address: "localhost:9092"
+    name: "Event Stream Mock"
+    ssl: false
+    
+    actors:
+      - name: "user-events-producer"
+        dataset:
+          - {"event_type": "user_created", "user_id": 1, "timestamp": "{{faker.date}}"}
+          - {"event_type": "user_updated", "user_id": 2, "timestamp": "{{faker.date}}"}
+        produce:
+          produce_list:
+            - queue: "user-events"
+              value: "user-event-data"
+              tag: "user-events"
+              key: "{{faker.uuid}}"
+        delay: 1.0
+        limit: 100
+
+# Management interface
+management:
+  port: "8080"
+  ssl: false

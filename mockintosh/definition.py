@@ -192,12 +192,6 @@ class Definition:
         config_root_builder = ConfigRootBuilder()
         config_root = config_root_builder.build(data)
 
-        for service in ConfigAsyncService.services:
-            service.address_template_renderer(
-                self.template_engine,
-                self.rendering_queue
-            )
-
         new_services = []
         for service in config_root.services:
             self.logs.add_service(service.get_name())

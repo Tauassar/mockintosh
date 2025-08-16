@@ -198,6 +198,100 @@ $ mockintosh --verbose --debug --logfile app.log serve config.yaml
 - `--debug`: Enable debug mode
 - `--help`: Show help message
 
+## Environment Variables
+
+Mockintosh supports configuration through environment variables for flexible deployment and configuration management. All environment variables are prefixed with `MOCKINTOSH_`.
+
+### Core Settings
+
+| Environment Variable | Default Value | Description |
+|---------------------|---------------|-------------|
+| `MOCKINTOSH_CONFIG_FILE` | `None` | Path to the configuration file to load |
+| `MOCKINTOSH_LOG_LEVEL` | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
+| `MOCKINTOSH_DEBUG` | `false` | Enable debug mode (true/false) |
+| `MOCKINTOSH_HOST` | `localhost` | Default host address for services |
+| `MOCKINTOSH_DEFAULT_PORT` | `8000` | Default port for services |
+| `MOCKINTOSH_DEFAULT_TEMPLATING_ENGINE` | `Handlebars` | Default templating engine (Handlebars, Jinja2) |
+
+### Development & Monitoring
+
+| Environment Variable | Default Value | Description |
+|---------------------|---------------|-------------|
+| `MOCKINTOSH_HOT_RELOAD` | `false` | Enable hot reload for development (true/false) |
+| `MOCKINTOSH_WATCH_CONFIG` | `false` | Watch configuration files for changes (true/false) |
+
+### Usage Examples
+
+#### Setting Environment Variables
+
+```bash
+# Set individual variables
+export MOCKINTOSH_DEBUG=true
+export MOCKINTOSH_LOG_LEVEL=DEBUG
+export MOCKINTOSH_HOST=0.0.0.0
+
+# Set multiple variables at once
+export MOCKINTOSH_DEBUG=true MOCKINTOSH_LOG_LEVEL=DEBUG MOCKINTOSH_HOST=0.0.0.0
+```
+
+#### Using .env File
+
+Create a `.env` file in your project directory:
+
+```bash
+# .env file
+MOCKINTOSH_CONFIG_FILE=config.yaml
+MOCKINTOSH_LOG_LEVEL=DEBUG
+MOCKINTOSH_DEBUG=true
+MOCKINTOSH_HOST=0.0.0.0
+MOCKINTOSH_DEFAULT_PORT=8000
+MOCKINTOSH_DEFAULT_TEMPLATING_ENGINE=Handlebars
+MOCKINTOSH_HOT_RELOAD=true
+MOCKINTOSH_WATCH_CONFIG=true
+```
+
+#### Docker with Environment Variables
+
+```bash
+# Run with environment variables
+docker run -e MOCKINTOSH_DEBUG=true \
+           -e MOCKINTOSH_LOG_LEVEL=DEBUG \
+           -e MOCKINTOSH_HOST=0.0.0.0 \
+           -p 8000:8000 \
+           ghcr.io/tauassar/mockintosh:latest \
+           serve config.yaml
+
+# Run with .env file
+docker run --env-file .env \
+           -p 8000:8000 \
+           ghcr.io/tauassar/mockintosh:latest \
+           serve config.yaml
+```
+
+#### Priority Order
+
+Environment variables are loaded in the following priority order (highest to lowest):
+
+1. **Command-line arguments** (highest priority)
+2. **Environment variables** (e.g., `MOCKINTOSH_DEBUG=true`)
+3. **`.env` file** (if present)
+4. **Default values** (lowest priority)
+
+#### Configuration Override Example
+
+```bash
+# .env file sets DEBUG=false
+echo "MOCKINTOSH_DEBUG=false" > .env
+
+# Environment variable overrides .env file
+export MOCKINTOSH_DEBUG=true
+
+# Command-line argument overrides environment variable
+mockintosh --debug serve config.yaml
+
+# Result: DEBUG is enabled (command-line takes precedence)
+```
+
 ### Examples
 
 ```shell

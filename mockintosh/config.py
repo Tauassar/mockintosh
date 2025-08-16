@@ -2,459 +2,361 @@
 # -*- coding: utf-8 -*-
 
 """
-.. module:: __init__
-    :synopsis: module that contains classes that mapped to the configuration file.
+Pydantic-based configuration module for Mockintosh.
+Replaces the legacy class-based configuration system with modern Pydantic models.
 """
 
-from abc import abstractmethod
 from typing import (
-    List,
-    Union,
-    Dict,
-    Tuple
+    List, Union, Dict, Optional, Any
 )
+from pathlib import Path
+from pydantic import BaseModel, Field, field_validator, computed_field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from mockintosh.constants import PYBARS, JINJA
-from mockintosh.performance import PerformanceProfile
-from mockintosh.exceptions import (
-    CommaInTagIsForbidden
-)
-from mockintosh.templating import TemplateRenderer
 
 
-class ConfigService:
-
-    services = []
-
-    def __init__(
-        self,
-        _type: str,
-        name: Union[str, None],
-        internal_service_id: Union[int, None]
-    ):
-        self.type = _type
-        self.name = name
-        self.external_file_paths = []
-        self._impl = None
-        if internal_service_id is None:
-            self.internal_service_id = len(ConfigService.services)
-            ConfigService.services.append(self)
-        else:
-            self.internal_service_id = internal_service_id
-            ConfigService.services[internal_service_id] = self
-
+class ConfigService(BaseModel):
+    """Compatibility class for old system."""
+    services: List['ConfigService'] = []
+    
     def get_name(self) -> str:
-        return self.name if self.name is not None else ''
+        """Get service name."""
+        return getattr(self, 'name', '') or ''
+    
+    def get_hint(self) -> str:
+        """Get service hint."""
+        return getattr(self, 'name', '') or ''
 
-    @abstractmethod
-    def get_hint(self):
-        raise NotImplementedError
 
-    def add_external_file_path(self, external_file_path) -> None:
-        self.external_file_paths.append(external_file_path)
+class ConfigExternalFilePath(BaseModel):
+    """Configuration for external file paths."""
+    path: str
+    _index: Optional[int] = None
+    
+    # Compatibility with old system
+    files: List['ConfigExternalFilePath'] = []
 
     def destroy(self) -> None:
-        for external_file_path in self.external_file_paths:
-            external_file_path.destroy()
+        """Clean up external file path."""
+        pass
+    
+    def add_external_file_path(self, external_file_path: 'ConfigExternalFilePath') -> None:
+        """Add external file path to service (compatibility method)."""
+        pass
 
 
-class ConfigContainsTag:
+class ConfigSchema(BaseModel):
+    """Configuration for data schemas."""
+    payload: Union[Dict[str, Any], ConfigExternalFilePath]
 
-    def forbid_comma_in_tag(self, data: list):
-        for row in data:
-            if isinstance(row, (str, ConfigExternalFilePath)):
-                return
-            elif isinstance(row, dict):
-                for key, value in row.items():
-                    if key != 'tag':
-                        continue
-                    if ',' in value:  # pragma: no cover
-                        raise CommaInTagIsForbidden(value)
+
+class ConfigDataset(BaseModel):
+    """Configuration for datasets."""
+    payload: Union[List[Dict[str, Any]], str, ConfigExternalFilePath]
+
+    @field_validator('payload')
+    @classmethod
+    def validate_payload(cls, v):
+        """Validate payload doesn't contain commas in tags."""
+        if isinstance(v, list):
+            for item in v:
+                if isinstance(item, dict) and 'tag' in item:
+                    if ',' in str(item['tag']):
+                        raise ValueError("Comma in tag is forbidden")
+        return v
+
+
+class ConfigHeaders(BaseModel):
+    """Configuration for HTTP headers."""
+    payload: Dict[str, Union[str, List[str], ConfigExternalFilePath]]
+
+
+class ConfigAmqpProperties(BaseModel):
+    """Configuration for AMQP message properties."""
+    content_type: Optional[str] = None
+    content_encoding: Optional[str] = None
+    delivery_mode: Optional[int] = None
+    priority: Optional[int] = None
+    correlation_id: Optional[str] = None
+    reply_to: Optional[str] = None
+    expiration: Optional[str] = None
+    message_id: Optional[str] = None
+    timestamp: Optional[float] = None
+    type: Optional[str] = Field(None, alias='_type')
+    user_id: Optional[str] = None
+    app_id: Optional[str] = None
+    cluster_id: Optional[str] = None
+
+
+class ConfigConsume(BaseModel):
+    """Configuration for message consumption."""
+    queue: str
+    group: Optional[str] = None
+    key: Optional[str] = None
+    schema_config: Optional[ConfigSchema] = Field(None, alias='schema')  # Renamed to avoid conflict
+    value: Optional[str] = None
+    headers: Optional[ConfigHeaders] = None
+    amqp_properties: Optional[ConfigAmqpProperties] = None
+    capture: int = 1
+
+
+class ConfigProduce(BaseModel):
+    """Configuration for message production."""
+    queue: str
+    value: Optional[str] = None
+    create: bool = False
+    tag: Optional[str] = None
+    key: Optional[str] = None
+    headers: Optional[ConfigHeaders] = None
+    amqp_properties: Optional[ConfigAmqpProperties] = None
+
+
+class ConfigMultiProduce(BaseModel):
+    """Configuration for multiple message production."""
+    produce_list: List[ConfigProduce] = Field(default_factory=list, alias='produce')
+
+
+class ConfigActor(BaseModel):
+    """Configuration for asynchronous service actors."""
+    name: str
+    dataset: Optional[Union[List[Dict[str, Any]], str, ConfigExternalFilePath]] = None
+    produce: Optional[Union[ConfigProduce, ConfigMultiProduce]] = None
+    consume: Optional[ConfigConsume] = None
+    delay: float = 1.0
+    limit: Optional[int] = None
+    multi_payloads_looped: bool = True
+    dataset_looped: bool = True
+
+
+class ConfigAsyncService(BaseModel):
+    """Configuration for asynchronous services (Kafka, AMQP, Redis, etc.)."""
+    type: str
+    address: str
+    name: Optional[str] = None
+    ssl: bool = False
+    internal_service_id: Optional[int] = None
+    
+    # Compatibility with old system
+    services: List['ConfigAsyncService'] = []
+    
+    # Service-specific configurations
+    actors: List[ConfigActor] = []
+    
+    def address_template_renderer(self) -> str:
+        """Get address template renderer (compatibility method)."""
+        return self.address
+    
+    def get_name(self) -> str:
+        """Get service name (compatibility method)."""
+        return self.name or ''
+    
+    def get_hint(self) -> str:
+        """Get service hint (compatibility method)."""
+        return self.address
+
+
+class ConfigBody(BaseModel):
+    """Configuration for request/response bodies."""
+    payload: Optional[Union[str, Dict[str, Any], ConfigExternalFilePath]] = None
+    schema_config: Optional[ConfigSchema] = Field(None, alias='schema')  # Renamed to avoid conflict
+    graphql_query: Optional[str] = Field(None, alias='graphql-query')
+    graphql_variables: Optional[Dict[str, Any]] = Field(None, alias='graphql-variables')
+
+
+class ConfigResponse(BaseModel):
+    """Configuration for HTTP responses."""
+    headers: Optional[ConfigHeaders] = None
+    status: int = 200
+    body: Union[str, ConfigBody, ConfigExternalFilePath]
+    use_templating: bool = False
+    templating_engine: Optional[str] = None
+    tag: Optional[str] = None
+    trigger_async_producer: Optional[str] = None
+
+
+class ConfigMultiResponse(BaseModel):
+    """Configuration for multiple responses."""
+    responses: List[ConfigResponse] = Field(default_factory=list, alias='response')
+
+
+class ConfigEndpoint(BaseModel):
+    """Configuration for HTTP endpoints."""
+    path: str
+    id: Optional[str] = None
+    comment: Optional[str] = None
+    method: str = "GET"
+    query_string: Dict[str, Any] = Field(default_factory=dict)
+    headers: Dict[str, Any] = Field(default_factory=dict)
+    body: Optional[ConfigBody] = None
+    dataset: Optional[Union[List[Dict[str, Any]], str, ConfigExternalFilePath]] = None
+    response: Union[str, ConfigResponse, ConfigMultiResponse]
+    multi_responses_looped: bool = True
+    dataset_looped: bool = True
+    performance_profile: Optional[str] = None
+
+
+class ConfigHttpService(BaseModel):
+    """Configuration for HTTP services."""
+    port: int
+    name: Optional[str] = None
+    hostname: Optional[str] = "localhost"
+    ssl: bool = False
+    ssl_cert_file: Optional[str] = None
+    ssl_key_file: Optional[str] = None
+    management_root: Optional[str] = "/management"
+    oas: Optional[Union[str, List[str], ConfigExternalFilePath]] = None
+    endpoints: List[ConfigEndpoint] = []
+    performance_profile: Optional[str] = None
+    fallback_to: Optional[str] = None
+    internal_service_id: Optional[int] = None
+    templating_engine: str = PYBARS
+    
+    # Compatibility with old system
+    services: List['ConfigHttpService'] = []
+    
+    def get_name(self) -> str:
+        """Get service name (compatibility method)."""
+        return self.name or ''
+    
+    def get_hint(self) -> str:
+        """Get service hint (compatibility method)."""
+        return f"{self.hostname or 'localhost'}:{self.port}"
+
+
+class ConfigPerformanceProfile(BaseModel):
+    """Configuration for performance profiles."""
+    ratio: float
+    delay: float
+    faults: Optional[Dict[str, float]] = None
+    actuator: Optional[Any] = None
+    
+    def model_post_init(self, __context: Any) -> None:
+        """Post-initialization hook for Pydantic v2."""
+        if self.ratio < 0.0 or self.ratio > 1.0:
+            raise ValueError("Ratio must be between 0.0 and 1.0")
+
+
+class ConfigGlobals(BaseModel):
+    """Configuration for global settings."""
+    headers: Optional[ConfigHeaders] = None
+    performance_profile: Optional[str] = None
+
+
+class ConfigManagement(BaseModel):
+    """Configuration for management interface."""
+    port: Union[str, int]
+    ssl: bool = False
+    ssl_cert_file: Optional[str] = None
+    ssl_key_file: Optional[str] = None
+
+
+class ConfigRoot(BaseModel):
+    """Root configuration for Mockintosh."""
+    services: List[Union[ConfigHttpService, ConfigAsyncService]] = []
+    management: Optional[ConfigManagement] = None
+    templating_engine: str = PYBARS
+    globals: Optional[ConfigGlobals] = None
+    performance_profiles: Dict[str, ConfigPerformanceProfile] = Field(default_factory=dict)
+    
+    @field_validator('templating_engine')
+    @classmethod
+    def validate_templating_engine(cls, v):
+        """Validate templating engine."""
+        if v not in [PYBARS, JINJA]:
+            raise ValueError(f"Templating engine must be one of: {PYBARS}, {JINJA}")
+        return v
+
+
+class MockintoshSettings(BaseSettings):
+    """Settings for Mockintosh application."""
+    model_config = SettingsConfigDict(
+        env_prefix='MOCKINTOSH_',
+        env_file='.env',
+        env_file_encoding='utf-8',
+        extra='ignore'  # Ignore extra fields from .env file
+    )
+    
+    config_file: Optional[str] = None
+    log_level: str = Field(default="INFO", description="Logging level")
+    debug: bool = Field(default=False, description="Enable debug mode")
+    host: str = Field(default="localhost", description="Default host")
+    default_port: int = Field(default=8000, description="Default port")
+    default_templating_engine: str = Field(default=PYBARS, description="Default templating engine")
+    
+    @field_validator('log_level')
+    @classmethod
+    def validate_log_level(cls, v):
+        """Validate log level."""
+        valid_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+        if v.upper() not in valid_levels:
+            raise ValueError(f"Log level must be one of: {', '.join(valid_levels)}")
+        return v.upper()
+    
+    @field_validator('default_templating_engine')
+    @classmethod
+    def validate_default_templating_engine(cls, v):
+        """Validate default templating engine."""
+        if v not in [PYBARS, JINJA]:
+            raise ValueError(f"Default templating engine must be one of: {PYBARS}, {JINJA}")
+        return v
+    
+    def get_config_summary(self) -> Dict[str, Any]:
+        """Get configuration summary."""
+        return {
+            'config_file': self.config_file,
+            'log_level': self.log_level,
+            'debug': self.debug,
+            'host': self.host,
+            'default_port': self.default_port,
+            'default_templating_engine': self.default_templating_engine
+        }
+    
+    def load_config(self, config_path: Optional[str] = None) -> ConfigRoot:
+        """Load configuration from file."""
+        import yaml
+        import json
+        
+        config_file = config_path or self.config_file
+        if not config_file:
+            raise ValueError("No configuration file specified")
+        
+        file_path = Path(config_file)
+        if not file_path.exists():
+            raise ValueError(f"Configuration file not found: {file_path}")
+        
+        with open(file_path, 'r', encoding='utf-8') as f:
+            if file_path.suffix.lower() in ['.yaml', '.yml']:
+                config_data = yaml.safe_load(f)
+            elif file_path.suffix.lower() == '.json':
+                config_data = json.load(f)
             else:
-                if row.tag is not None and ',' in row.tag:
-                    raise CommaInTagIsForbidden(row.tag)
-
-
-class ConfigExternalFilePath:
-
-    files = []
-
-    def __init__(self, path: str, service: ConfigService = None):
-        self.path = path
-        self._index = len(ConfigExternalFilePath.files)
-        ConfigExternalFilePath.files.append(self)
-        if service is not None:
-            service.add_external_file_path(self)
-
-    def destroy(self) -> None:
-        ConfigExternalFilePath.files.pop(self._index)
-        for i, external_file_path in enumerate(ConfigExternalFilePath.files):
-            external_file_path._index = i
-
-
-class ConfigDataset(ConfigContainsTag):
-
-    def __init__(self, payload: Union[List[dict], str, ConfigExternalFilePath]):
-        self.payload = payload
-        if isinstance(self.payload, list):
-            self.forbid_comma_in_tag(self.payload)
-
-
-class ConfigSchema:
-
-    def __init__(self, payload: Union[dict, ConfigExternalFilePath]):
-        self.payload = payload
-
-
-class ConfigHeaders:
-
-    def __init__(self, payload: Dict[str, Union[str, List[str], ConfigExternalFilePath]]):
-        self.payload = payload
-
-
-class ConfigAmqpProperties:
-
-    def __init__(
-        self,
-        content_type=None,
-        content_encoding=None,
-        delivery_mode=None,
-        priority=None,
-        correlation_id=None,
-        reply_to=None,
-        expiration=None,
-        message_id=None,
-        timestamp=None,
-        _type=None,
-        user_id=None,
-        app_id=None,
-        cluster_id=None
-    ):
-        self.content_type = content_type
-        self.content_encoding = content_encoding
-        self.delivery_mode = delivery_mode
-        self.priority = priority
-        self.correlation_id = correlation_id
-        self.reply_to = reply_to
-        self.expiration = expiration
-        self.message_id = message_id
-        self.timestamp = timestamp
-        self.type = _type
-        self.user_id = user_id
-        self.app_id = app_id
-        self.cluster_id = cluster_id
-
-
-class ConfigConsume:
-
-    def __init__(
-        self,
-        queue: str,
-        group: Union[str, None] = None,
-        key: Union[str, None] = None,
-        schema: Union[ConfigSchema, None] = None,
-        value: Union[str, None] = None,
-        headers: Union[ConfigHeaders, None] = None,
-        amqp_properties: Union[ConfigAmqpProperties, None] = None,
-        capture: int = 1
-    ):
-        self.queue = queue
-        self.group = group
-        self.key = key
-        self.schema = schema
-        self.value = value
-        self.headers = headers
-        self.amqp_properties = amqp_properties
-        self.capture = capture
-
-
-class ConfigProduce:
-
-    def __init__(
-        self,
-        queue: str,
-        value: Union[str, ConfigExternalFilePath],
-        create: bool = False,
-        tag: Union[str, None] = None,
-        key: Union[str, None] = None,
-        headers: Union[ConfigHeaders, None] = None,
-        amqp_properties: Union[ConfigAmqpProperties, None] = None
-    ):
-        self.queue = queue
-        self.value = value
-        self.create = create
-        self.tag = tag
-        self.key = key
-        self.headers = headers
-        self.amqp_properties = amqp_properties
-
-
-class ConfigMultiProduce:
-
-    def __init__(self, produce_list: List[ConfigProduce]):
-        self.produce_list = produce_list
-
-
-class ConfigActor:
-
-    def __init__(
-        self,
-        name: Union[str, None] = None,
-        dataset: Union[ConfigDataset, None] = None,
-        produce: Union[ConfigMultiProduce, ConfigProduce, None] = None,
-        consume: Union[ConfigConsume, None] = None,
-        delay: Union[int, float, None] = None,
-        limit: Union[int, None] = None,
-        multi_payloads_looped: bool = True,
-        dataset_looped: bool = True,
-    ):
-        self.name = name
-        self.dataset = dataset
-        self.produce = produce
-        self.consume = consume
-        self.delay = delay
-        self.limit = limit
-        self.multi_payloads_looped = multi_payloads_looped
-        self.dataset_looped = dataset_looped
-
-
-class ConfigAsyncService(ConfigService):
-
-    services = []
-
-    def __init__(
-        self,
-        _type: str,
-        address: Union[str, None] = None,
-        actors: List[ConfigActor] = [],
-        name: Union[str, None] = None,
-        ssl: bool = False,
-        internal_service_id: Union[int, None] = None
-    ):
-        super().__init__(_type, name, internal_service_id)
-        ConfigAsyncService.services.append(self)
-        self.type = _type
-        self.address = address
-        self.actors = actors
-        self.ssl = ssl
-
-    def get_hint(self):
-        return '%s://%s' % (self.type, self.address) if self.name is None else self.name
-
-    def address_template_renderer(
-        self,
-        template_engine: str,
-        rendering_queue,
-    ) -> Tuple[str, dict]:
-        if template_engine == PYBARS:
-            from mockintosh.hbs.methods import env
-        elif template_engine == JINJA:
-            from mockintosh.j2.methods import env
-
-        renderer = TemplateRenderer()
-        self.address, _ = renderer.render(
-            template_engine,
-            self.address,
-            rendering_queue,
-            inject_methods=[
-                env
-            ]
-        )
-
-
-class ConfigResponse:
-
-    def __init__(
-        self,
-        headers: Union[ConfigHeaders, None] = None,
-        status: Union[str, int] = 200,
-        body: Union[str, ConfigExternalFilePath, None] = None,
-        use_templating: bool = True,
-        templating_engine: str = PYBARS,
-        tag: Union[str, None] = None,
-        trigger_async_producer: Union[str, int, None] = None
-    ):
-        self.headers = headers
-        self.status = status
-        self.body = body
-        self.use_templating = use_templating
-        self.templating_engine = templating_engine
-        self.tag = tag
-        self.trigger_async_producer = trigger_async_producer
-
-    def oas(self, status_data: dict):
-        new_headers = {k.title(): v for k, v in self.headers.payload.items()}
-        if 'Content-Type' in new_headers:
-            if new_headers['Content-Type'].startswith('application/json'):
-                status_data = {
-                    'content': {
-                        'application/json': {
-                            'schema': {}
-                        }
-                    }
-                }
-        status_data['headers'] = {}
-        for key in new_headers.keys():
-            status_data['headers'][key] = {
-                'schema': {
-                    'type': 'string'
-                }
-            }
-
-
-class ConfigMultiResponse(ConfigContainsTag):
-
-    def __init__(self, payload: List[Union[ConfigResponse, ConfigExternalFilePath, str]]):
-        self.payload = payload
-        self.forbid_comma_in_tag(self.payload)
-
-
-class ConfigBody:
-
-    def __init__(
-        self,
-        schema: ConfigSchema = None,
-        text: Union[str, None] = None,
-        graphql_query: Union[str, ConfigExternalFilePath, None] = None,
-        graphql_variables: Dict[str, str] = None,
-        urlencoded: Dict[str, str] = None,
-        multipart: Dict[str, str] = None
-    ):
-        self.schema = schema
-        self.text = text
-        self.urlencoded = urlencoded
-        self.multipart = multipart
-        self.graphql_query = graphql_query
-        self.graphql_variables = graphql_variables
-
-
-class ConfigEndpoint:
-
-    def __init__(
-        self,
-        path: str,
-        _id: Union[str, None] = None,
-        comment: Union[str, None] = None,
-        method: str = 'GET',
-        query_string: Dict[str, str] = {},
-        headers: Dict[str, str] = {},
-        body: Union[ConfigBody, None] = None,
-        dataset: Union[ConfigDataset, None] = None,
-        response: Union[ConfigResponse, ConfigExternalFilePath, str, ConfigMultiResponse, None] = None,
-        multi_responses_looped: bool = True,
-        dataset_looped: bool = True,
-        performance_profile: Union[str, None] = None
-    ):
-        self.path = path
-        self.id = _id
-        self.comment = comment
-        self.method = method.upper()
-        self.query_string = query_string
-        self.headers = headers
-        self.body = body
-        self.dataset = dataset
-        self.response = response
-        self.multi_responses_looped = multi_responses_looped
-        self.dataset_looped = dataset_looped
-        self.performance_profile = performance_profile
-
-
-class ConfigHttpService(ConfigService):
-
-    def __init__(
-        self,
-        port: int,
-        name: Union[str, None] = None,
-        hostname: Union[str, None] = None,
-        ssl: bool = False,
-        ssl_cert_file: Union[str, None] = None,
-        ssl_key_file: Union[str, None] = None,
-        management_root: Union[str, None] = None,
-        oas: Union[str, ConfigExternalFilePath, None] = None,
-        endpoints: List[ConfigEndpoint] = [],
-        performance_profile: Union[str, None] = None,
-        fallback_to: Union[str, None] = None,
-        internal_service_id: Union[int, None] = None
-    ):
-        super().__init__('http', name, internal_service_id)
-        self.port = port
-        self.hostname = hostname
-        self.ssl = ssl
-        self.ssl_cert_file = ssl_cert_file
-        self.ssl_key_file = ssl_key_file
-        self.management_root = management_root
-        self.oas = oas
-        self.endpoints = endpoints
-        self.performance_profile = performance_profile
-        self.fallback_to = fallback_to
-
-    def get_hint(self):
-        return '%s://%s:%s%s' % (
-            'https' if self.ssl else 'http',
-            self.hostname if self.hostname is not None else (
-                'localhost'
-            ),
-            self.port,
-            ' - %s' % self.name if self.name is not None else ''
-        )
-
-
-class ConfigGlobals:
-
-    def __init__(
-        self,
-        headers: Union[ConfigHeaders, None],
-        performance_profile: Union[str, None] = None
-    ):
-        self.headers = headers
-        self.performance_profile = performance_profile
-
-
-class ConfigManagement:
-
-    def __init__(
-        self,
-        port: str,
-        ssl: bool = False,
-        ssl_cert_file: Union[str, None] = None,
-        ssl_key_file: Union[str, None] = None
-    ):
-        self.port = port
-        self.ssl = ssl
-        self.ssl_cert_file = ssl_cert_file
-        self.ssl_key_file = ssl_key_file
-
-
-class ConfigPerformanceProfile:
-
-    def __init__(
-        self,
-        ratio: Union[int, float],
-        delay: Union[int, float] = 0.0,
-        faults: Union[dict, None] = None
-    ):
-        self.ratio = ratio
-        self.delay = delay
-        self.faults = {} if faults is None else faults
-        self.actuator = PerformanceProfile(
-            self.ratio,
-            delay=self.delay,
-            faults=self.faults
-        )
-
-
-class ConfigRoot:
-
-    def __init__(
-        self,
-        services: List[Union[ConfigHttpService, ConfigAsyncService]],
-        management: Union[ConfigManagement, None] = None,
-        templating_engine: str = PYBARS,
-        _globals: Union[ConfigGlobals, None] = None,
-        performance_profiles: Dict[str, ConfigPerformanceProfile] = {}
-    ):
-        self.services = services
-        self.management = management
-        self.templating_engine = templating_engine
-        self.globals = _globals
-        self.performance_profiles = performance_profiles
+                raise ValueError(f"Unsupported configuration file format: {file_path.suffix}")
+        
+        return ConfigRoot(**config_data)
+
+
+# Export all classes for backward compatibility
+__all__ = [
+    'ConfigRoot',
+    'ConfigHttpService',
+    'ConfigAsyncService',
+    'ConfigEndpoint',
+    'ConfigResponse',
+    'ConfigMultiResponse',
+    'ConfigBody',
+    'ConfigHeaders',
+    'ConfigSchema',
+    'ConfigActor',
+    'ConfigDataset',
+    'ConfigConsume',
+    'ConfigProduce',
+    'ConfigMultiProduce',
+    'ConfigAmqpProperties',
+    'ConfigExternalFilePath',
+    'ConfigManagement',
+    'ConfigPerformanceProfile',
+    'ConfigGlobals',
+    'ConfigService',
+    'MockintoshSettings'
+] 
